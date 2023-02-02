@@ -1,5 +1,5 @@
 <h1>Welcome to OwlandLetters.com</h1>
-  <h3>Please fill in this form to create an account.</h3>
+  <h3>Adithya</h3>
 
  <form:form modelAttribute="user">
    <form:label path="username">Username</form:label>
