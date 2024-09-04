@@ -16,7 +16,7 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>vamsi</finalName>
+    <finalName>krishna</finalName>
     <pluginManagement>
       <plugins>
         <plugin>
