@@ -24,8 +24,7 @@ FROM tomcat:9.0-jdk17
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # Copy the built .war file from the previous build stage into Tomcat's webapps directory
-#COPY  /app/target/my-app.war /usr/local/tomcat/webapps/my-app.war
+#COPY --from=build /app/target/my-app.war /usr/local/tomcat/webapps/my-app.war
 COPY --from=build target/*.war /usr/local/tomcat/webapps/ROOT.war
-
 # Expose port 8080 for Tomcat
 EXPOSE 8080
