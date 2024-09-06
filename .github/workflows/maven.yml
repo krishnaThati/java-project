@@ -1,35 +1,70 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main  # Trigger pipeline on push to the main branch
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      security-events: write
+    steps:
+   
+    - name: Checkout code
+      uses: actions/checkout@v2
 
+    - name: Update dependency graph
+      run: |
+        # Your command to update the dependency graph here
+        echo "Updating dependency graph...
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven
+
+    - name: Build with Maven
+      run: mvn clean package
+
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-    - name: Update dependency graph
-      uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+    - name: Set up Docker Buildx
+  
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app .
+        docker push ${{ secrets.DOCKER_USERNAME }}/my-app
+
+    - name: Deploy to AWS EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_EC2_IP }} << EOF
+          docker pull ${{ secrets.DOCKER_USERNAME }}/my-app
+          docker stop my-app || true
+          docker rm my-app || true
+          docker run -d -p 8080:8080 --name my-app ${{ secrets.DOCKER_USERNAME }}/my-app
+        EOF
