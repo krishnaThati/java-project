@@ -14,14 +14,16 @@ COPY src ./src
 # Package the application
 RUN mvn clean package
 
-# Use a lightweight JRE image to run the application
-FROM openjdk:17-jdk-slim
+# Use Tomcat image
+FROM tomcat:9.0-jdk17
 
-# Copy the built .jar file from the previous build stage
-COPY --from=build /app/target/my-app.jar /app/my-app.jar
+# Remove the default webapps (optional, clean start)
+RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Expose the necessary port
+# Copy the built .war file from the previous build stage into Tomcat's webapps directory
+COPY --from=build /app/target/my-app.war /usr/local/tomcat/webapps/my-app.war
+
+# Expose port 8080 for Tomcat
 EXPOSE 8080
 
-# Define the command to run the application
-ENTRYPOINT ["java", "-jar", "/app/my-app.jar"]
+# Tomcat's default entry point already handles the server start
