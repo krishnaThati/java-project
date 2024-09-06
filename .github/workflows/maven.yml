@@ -36,6 +36,10 @@ jobs:
 
     - name: Build with Maven
       run: mvn clean package
+      
+    - name: List files in target directory
+      run: ls -la /home/runner/work/java-project/java-project/target
+
 
   deploy:
     needs: build
