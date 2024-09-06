@@ -9,3 +9,4 @@ COPY target/krishna.war /usr/local/tomcat/webapps/krishna.war
 
 # Expose port 8080 for Tomcat
 EXPOSE 8080
+
